@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(INVESTOR)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  managedInvestors Investor[]     @relation("RMInvestors")
+  personalNotes    PersonalNote[]
+  reminders        Reminder[]
+  investorProfile  Investor?      @relation("InvestorUser")
+
+  accounts Account[]
+  sessions Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Investor {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  document  String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rmId String
+  rm   User   @relation("RMInvestors", fields: [rmId], references: [id])
+
+  userId String? @unique
+  user   User?   @relation("InvestorUser", fields: [userId], references: [id])
+
+  expenses    Expense[]
+  monthlyFees MonthlyFee[]
+}
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  category  String?
+  contact   String?
+  email     String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  expenses Expense[]
+}
+
+model Expense {
+  id          String        @id @default(cuid())
+  description String
+  amount      Decimal       @db.Decimal(10, 2)
+  date        DateTime
+  status      PaymentStatus @default(PENDING)
+  category    String?
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  investorId String
+  investor   Investor  @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+}
+
+model MonthlyFee {
+  id          String        @id @default(cuid())
+  description String
+  amount      Decimal       @db.Decimal(10, 2)
+  dueDate     DateTime
+  status      PaymentStatus @default(PENDING)
+  month       Int
+  year        Int
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  investorId String
+  investor   Investor @relation(fields: [investorId], references: [id], onDelete: Cascade)
+}
+
+model PersonalNote {
+  id        String    @id @default(cuid())
+  title     String
+  content   String    @db.Text
+  amount    Decimal?  @db.Decimal(10, 2)
+  date      DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Reminder {
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  dueDate     DateTime
+  status      ReminderStatus @default(PENDING)
+  priority    Priority       @default(MEDIUM)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  RM
+  INVESTOR
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  OVERDUE
+}
+
+enum ReminderStatus {
+  PENDING
+  COMPLETED
+  DISMISSED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
