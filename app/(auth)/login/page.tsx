@@ -9,7 +9,6 @@ import { z } from "zod";
 import { TrendingUp, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Link from "next/link";
 
 const schema = z.object({
   email: z.string().email("E-mail inválido"),
@@ -128,12 +127,6 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-zinc-500 mt-6">
-            Não tem conta?{" "}
-            <Link href="/register" className="text-zinc-900 font-medium hover:underline">
-              Criar conta
-            </Link>
-          </p>
         </div>
       </div>
     </div>
