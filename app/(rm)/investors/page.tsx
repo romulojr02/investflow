@@ -1,6 +1,5 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { formatCurrency, formatDate } from "@/lib/utils";
 import { InvestorsClient } from "@/components/rm/investors-client";
 
 export default async function InvestorsPage() {
@@ -17,7 +16,12 @@ export default async function InvestorsPage() {
   });
 
   const data = investors.map((inv) => ({
-    ...inv,
+    id: inv.id,
+    name: inv.name,
+    email: inv.email,
+    phone: inv.phone,
+    document: inv.document,
+    createdAt: inv.createdAt.toISOString(),
     amount: inv.expenses.reduce((s, e) => s + Number(e.amount), 0),
     pendingAmount:
       inv.expenses.filter((e) => e.status !== "PAID").reduce((s, e) => s + Number(e.amount), 0) +
@@ -25,5 +29,5 @@ export default async function InvestorsPage() {
     totalFees: inv.monthlyFees.reduce((s, f) => s + Number(f.amount), 0),
   }));
 
-  return <InvestorsClient investors={data} formatCurrency={formatCurrency} formatDate={formatDate} />;
+  return <InvestorsClient investors={data} />;
 }

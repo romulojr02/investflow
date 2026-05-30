@@ -18,6 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/lib/toast-context";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 const schema = z.object({
   name: z.string().min(2, "Nome muito curto"),
@@ -37,21 +38,13 @@ type Investor = {
   email: string | null;
   phone: string | null;
   document: string | null;
-  createdAt: Date;
+  createdAt: string;
   amount: number;
   pendingAmount: number;
   totalFees: number;
 };
 
-export function InvestorsClient({
-  investors: initial,
-  formatCurrency,
-  formatDate,
-}: {
-  investors: Investor[];
-  formatCurrency: (v: number) => string;
-  formatDate: (d: Date | string) => string;
-}) {
+export function InvestorsClient({ investors: initial }: { investors: Investor[] }) {
   const router = useRouter();
   const { toast } = useToast();
   const [investors, setInvestors] = useState(initial);
